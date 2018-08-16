@@ -23,6 +23,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--batch_size', default=100, type=int, help='batch size')
 parser.add_argument('--choosen_label', default="T_CHASSIS", type=str, help='the label to train and evaluate')
 parser.add_argument('--hidden_units', default="200x200", type=str, help='Number of hidden units')
+parser.add_argument('--learning_rate', default=0.0001, type=float, help='Learning rate')
+parser.add_argument('--optimiser', default="DFLT", type=str, help='Optimiser, Adam or GDO')
+parser.add_argument('--suffix', default="", type=str, help='Model dir suffix')
 
 """
 parser.add_argument('--train_steps', default=1000, type=int, help='number of training steps')
@@ -105,9 +108,21 @@ def main(argv):
         # optimizer = tensorflow.train.AdagradOptimizer(learning_rate=0.1) ?
         # optimizer = tensorflow.train.AdagradDAOptimizer(learning_rate=0.1, global_step= ?) global_step=train_steps?   
         # optimizer = tensorflow.train.AdamOptimizer(learning_rate=0.1) ?
-        #opt = tensorflow.train.GradientDescentOptimizer(learning_rate=0.0001)
-        my_id=my_id+"_oDFLT_a" #"_oGDO_lr0.0001"
+        if args.optimiser == "Adam":
+                opt = tensorflow.train.AdamOptimizer(learning_rate=args.learning_rate)
+                my_id=my_id+"_o"+args.optimiser
+                my_id=my_id+"_lr"+str(args.learning_rate)
+        elif args.optimiser == "GDO":
+                opt = tensorflow.train.GradientDescentOptimizer(learning_rate=learning_rate)
+                my_id=my_id+"_o"+args.optimiser
+                my_id=my_id+"_lr"+str(args.learning_rate)
+        else:
+                opt = None #adagrad, whoch doesn not have a learning rate
+                my_id=my_id+"_o"+args.optimiser
 
+        if args.suffix != "":
+                my_id = my_id + "_" + args.suffix
+                
         resultfile = open("Results/"+my_id+"_model_results.txt", "w")
         
         resultfile.write('\nModel training: ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\n\n')
@@ -120,13 +135,22 @@ def main(argv):
         resultfile.write('Fixed_selection: ' + str(fixed_selection) + '\n')
         resultfile.flush()
 
-        classifier = tensorflow.estimator.DNNClassifier(
-                feature_columns=my_feature_columns,
-                hidden_units=hidden_units,
-                n_classes=len(label_mapping),
-                model_dir="./models/"+my_id,
-                config=my_checkpointing_config ) 
-                #optimizer=opt)
+        if opt:
+                classifier = tensorflow.estimator.DNNClassifier(
+                        feature_columns=my_feature_columns,
+                        hidden_units=hidden_units,
+                        n_classes=len(label_mapping),
+                        model_dir="./models/"+my_id,
+                        config=my_checkpointing_config,
+                        optimizer=opt)
+        else:
+                classifier = tensorflow.estimator.DNNClassifier(
+                        feature_columns=my_feature_columns,
+                        hidden_units=hidden_units,
+                        n_classes=len(label_mapping),
+                        model_dir="./models/"+my_id,
+                        config=my_checkpointing_config)
+                
         #classifier = tensorflow.estimator.DNNClassifier \
         #               (feature_columns=my_feature_columns,hidden_units=hidden_units,n_classes=len(label_mapping))
         #classifier = tensorflow.estimator.DNNClassifier \
@@ -134,7 +158,7 @@ def main(argv):
         
         ### Train the Model.
         # PJB added loop
-        for i in range(0,25):
+        for i in range(0,20):
                 print('\nModel training\n\n\n')
                 #resultfile.write('\nModel training: ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\n\n\n')
                 classifier.train(input_fn=lambda:dataloader.train_input_fn(trainset, int_labels_train, batch_size, nr_epochs), steps=train_steps)
