@@ -38,6 +38,7 @@ if len(files) < 2:
 # Hard coded, which is BORING, but it is a one-off thing (I think)
 fn, lbl = files[0]
 acc = pd.read_csv( fn )
+acc = acc[ (acc["Step"] <= 300000) ]
 acc = acc.drop(columns=["Wall time"])
 acc = acc.rename( index=str, columns={"Step": "Step", "Value": lbl} )
 
@@ -53,7 +54,7 @@ print( acc.head )
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4))
 acc.plot( x="Step", ax=ax )
 ax.set_ylim( (0.5,1) )
-ax.set_xlim( (0,300000) )
+ax.set_xlim( (0,300000+10000) )
 fig.savefig("curves.png", dpi=144)
 plt.show(block=True)
 
