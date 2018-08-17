@@ -12,7 +12,8 @@ files = [
     [ "lENGINE_TYPE_h128x64_oAdam_lr0.001_b0_run_eval-tag-average_loss.csv", "128x64 Adam 0.001"], 
     [ "lENGINE_TYPE_h256x128_oAdam_lr0.0001_b0_run_eval-tag-average_loss.csv", "256x128 Adam 0.0001"], 
     [ "lENGINE_TYPE_h256x128_oAdam_lr0.001_b0_run_eval-tag-average_loss.csv", "256x128 Adam 0.001"], 
-    [ "lENGINE_TYPE_h512x256_oAdam_lr0.0001_b0_run_eval-tag-average_loss.csv", "512x256 Adam 0.0001"]
+    [ "lENGINE_TYPE_h512x256_oAdam_lr0.0001_b0_run_eval-tag-average_loss.csv", "512x256 Adam 0.0001"],
+    [ "lENGINE_TYPE_h512x256_oAdam_lr0.001_b0_run_eval-tag-average_loss.csv", "512x256 Adam 0.001"]
 ]
 
 # Crude, but ok...
