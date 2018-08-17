@@ -26,6 +26,7 @@ parser.add_argument('--hidden_units', default="200x200", type=str, help='Number 
 parser.add_argument('--learning_rate', default=0.0001, type=float, help='Learning rate')
 parser.add_argument('--optimiser', default="DFLT", type=str, help='Optimiser, Adam or GDO')
 parser.add_argument('--suffix', default="", type=str, help='Model dir suffix')
+parser.add_argument("--test", action='store_true', default=False, help='Exit before training' )
 
 """
 parser.add_argument('--train_steps', default=1000, type=int, help='number of training steps')
@@ -64,9 +65,6 @@ def main(argv):
         data_path = 'Data_original/' # 'Data_original/' 'Testdata/'
         structured_data_path = 'Compressed/' # 'Compressed_valid_chassis' Compressed/Compressed_single/
         
-        #sys.exit()
-        
-        
         # Label_mapping holds key value pairs where key is the label and value its integer representation
         label_mapping = dataloader.get_valid_labels(label_path, choosen_label) # Labels from labels file only
         
@@ -87,6 +85,9 @@ def main(argv):
         validationset, labels_validate, label_mapping, int_labels_validate = \
                 dataloader.get_model_data(validationframe, label_mapping, choosen_label)
 
+        if args.test:
+                sys.exit(2)
+                
         my_checkpointing_config = tensorflow.estimator.RunConfig(
                 #save_checkpoints_secs = 1*60,  # Save checkpoints every minute (conflicts with save_checkpoints_steps)
                 keep_checkpoint_max = 4,       # Retain the 4 most recent checkpoints.
@@ -122,7 +123,12 @@ def main(argv):
 
         if args.suffix != "":
                 my_id = my_id + "_" + args.suffix
-                
+
+        # Save data files
+        trainset.to_csv( "train_"+my_id+".csv", index=False )
+        testset.to_csv( "test_"+my_id+".csv", index=False )
+        validationset.to_csv( "val_"+my_id+".csv", index=False )
+
         resultfile = open("Results/"+my_id+"_model_results.txt", "w")
         
         resultfile.write('\nModel training: ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\n\n')
@@ -151,14 +157,10 @@ def main(argv):
                         model_dir="./models/"+my_id,
                         config=my_checkpointing_config)
                 
-        #classifier = tensorflow.estimator.DNNClassifier \
-        #               (feature_columns=my_feature_columns,hidden_units=hidden_units,n_classes=len(label_mapping))
-        #classifier = tensorflow.estimator.DNNClassifier \
-        #       (feature_columns=my_feature_columns,hidden_units=hidden_units,n_classes=len(label_mapping), model_dir='Volvo_model')
         
         ### Train the Model.
         # PJB added loop
-        for i in range(0,20):
+        for i in range(0,30):
                 print('\nModel training\n\n\n')
                 #resultfile.write('\nModel training: ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\n\n\n')
                 classifier.train(input_fn=lambda:dataloader.train_input_fn(trainset, int_labels_train, batch_size, nr_epochs), steps=train_steps)
@@ -190,7 +192,7 @@ def main(argv):
                         if str(expected[class_id]) == str(expec):
                                 predictfile.write('Loop:'+str(i)+' Percent: ' + str(100 * probability) + '  ' + choosen_label + ': ' + str(expec) + '\n')
                 predictfile.close()
-        resultfile.write('\n******************************\n')
+                resultfile.write('\n******************************\n')
         resultfile.close()
 
         

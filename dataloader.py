@@ -284,7 +284,7 @@ def get_model_data(dataframe, label_mapping, choosen_label = 'T_CHASSIS'):
 	return dataframe, string_labels, label_mapping, int_labels
 	
 	
-def train_input_fn(features, labels, batch_size, nr_epochs):
+def train_input_fn(features, labels, batch_size, nr_epochs, shuffle=True):
 	"""An input function for training"""
 	# Convert the inputs to a Dataset.
 	dataset = tensorflow.data.Dataset.from_tensor_slices((dict(features), labels))
