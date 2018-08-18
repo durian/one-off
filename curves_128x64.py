@@ -27,7 +27,7 @@ def extract(fn):
     lr = ""
     do = ""
     try:
-        bits = re.search('l(.*?)_', fn)
+        bits = re.search('l(.*)_h', fn)
         lb = bits.group(1) 
     except:
         pass
@@ -75,7 +75,7 @@ for fn in files:
 
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12,8))
 acc.plot( x="Step", ax=ax )
-ax.set_title( "eval-tag-accuracy" )
+ax.set_title( lb + " / eval-tag-accuracy" )
 ax.set_ylim( (0.5,1) )
 ax.set_xlim( (0,300000+10000) )
 ax.legend(labelspacing=0.2, frameon=False, ncol=2)
@@ -101,7 +101,7 @@ for fn in files:
 
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12,8))
 acc.plot( x="Step", ax=ax )
-ax.set_title( "eval-tag-average_loss" )
+ax.set_title( lb + " / eval-tag-average_loss" )
 ax.set_ylim( (0,4) )
 ax.set_xlim( (0,300000+10000) )
 ax.legend(labelspacing=0.2, frameon=False, ncol=2)
