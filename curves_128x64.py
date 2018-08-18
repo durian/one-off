@@ -59,7 +59,7 @@ for fn in files:
 
     lb, hu, op, lr, do = extract( fn )
     
-    lbl = lb+" "+hu+" "+op+" "+lr+" "+do
+    lbl = hu+" "+op+" "+lr+" "+do
     print( lbl )
     nxt = pd.read_csv( fn )
     nxt = nxt[ (nxt["Step"] <= 300000) ]
@@ -85,7 +85,7 @@ for fn in files:
 
     lb, hu, op, lr, do = extract( fn )
         
-    lbl = lb+" "+hu+" "+op+" "+lr+" "+do
+    lbl = hu+" "+op+" "+lr+" "+do
     print( lbl )
     nxt = pd.read_csv( fn )
     nxt = nxt[ (nxt["Step"] <= 300000) ]
