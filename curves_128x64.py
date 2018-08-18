@@ -5,20 +5,14 @@ import sys
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import minmax_scale
 import re
+import glob
+import argparse
 
-files = [
-    "lENGINE_TYPE_h128x64_oAdam_lr0.0001_b0_run_.-tag-average_loss.csv",
-    "lENGINE_TYPE_h128x64_oAdam_lr0.0001_b0_run_eval-tag-accuracy.csv",
-    "lENGINE_TYPE_h128x64_oAdam_lr0.0001_b0_run_eval-tag-average_loss.csv",
-    
-    "lENGINE_TYPE_h128x64_oAdam_lr0.0001_do0.2_b1_run_.-tag-average_loss.csv",
-    "lENGINE_TYPE_h128x64_oAdam_lr0.0001_do0.2_b1_run_eval-tag-accuracy.csv",
-    "lENGINE_TYPE_h128x64_oAdam_lr0.0001_do0.2_b1_run_eval-tag-average_loss.csv",
+parser = argparse.ArgumentParser()
+parser.add_argument( '-u', "--hidden_units", type=str, default="128x64", help='Hidden units' )
+args = parser.parse_args()
 
-    "lENGINE_TYPE_h128x64_oAdam_lr0.001_b0_run_.-tag-average_loss.csv",
-    "lENGINE_TYPE_h128x64_oAdam_lr0.001_b0_run_eval-tag-accuracy.csv",
-    "lENGINE_TYPE_h128x64_oAdam_lr0.001_b0_run_eval-tag-average_loss.csv"
-]
+files = glob.glob("lENGINE_TYPE_h"+args.hidden_units+"*csv")
 
 def extract(fn):
     lb = ""
