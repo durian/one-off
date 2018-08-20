@@ -48,7 +48,8 @@ if args.learning_rate:
 if len(files) == 0:
     print( "No files found" )
     sys.exit(1)
-    
+
+
 def extract(fn):
     lb = ""
     hu = ""
@@ -88,14 +89,14 @@ def extract(fn):
     return [lb, hu, op, lr, do]
 
 acc = pd.DataFrame( columns=["Step"] )
-for fn in files:
+for fn in sorted(files):
     if not "eval-tag-accuracy" in fn:
         continue
 
     lb, hu, op, lr, do = extract( fn )
     
     lbl = hu+" "+op+" "+lr+" "+do
-    print( lbl )
+    print( lbl, fn )
     nxt = pd.read_csv( fn )
     nxt = nxt[ (nxt["Step"] <= 300000) ]
     nxt = nxt.drop(columns=["Wall time"])
@@ -103,6 +104,11 @@ for fn in files:
     acc = pd.merge( left=acc, right=nxt, left_on='Step', right_on='Step', how='outer' )
 
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12,8))
+#
+#nc = len( files )
+#cm = plt.get_cmap('tab20c') #'gist_rainbow' #https://matplotlib.org/examples/color/colormaps_reference.html
+#ax.set_prop_cycle(color=[cm(1.*i/nc) for i in range(nc)])
+#
 acc.plot( x="Step", ax=ax )
 ax.set_title( lb + " / eval-tag-accuracy" )
 ax.set_ylim( (0.5,1) )
@@ -114,14 +120,14 @@ fig.savefig("curves_128x64_eval_acc.png", dpi=144)
 # -----
 
 acc = pd.DataFrame( columns=["Step"] )
-for fn in files:
+for fn in sorted(files):
     if not "eval-tag-average_loss" in fn:
         continue
 
     lb, hu, op, lr, do = extract( fn )
         
     lbl = hu+" "+op+" "+lr+" "+do
-    print( lbl )
+    print( lbl, fn )
     nxt = pd.read_csv( fn )
     nxt = nxt[ (nxt["Step"] <= 300000) ]
     nxt = nxt.drop(columns=["Wall time"])
@@ -129,6 +135,11 @@ for fn in files:
     acc = pd.merge( left=acc, right=nxt, left_on='Step', right_on='Step', how='outer' )
 
 fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(12,8))
+#
+#nc = len( files )
+#cm = plt.get_cmap('tab20') #'gist_rainbow' #https://matplotlib.org/examples/color/colormaps_reference.html
+#ax.set_prop_cycle( color=[cm(1.*i/nc) for i in range(nc)] )
+#
 acc.plot( x="Step", ax=ax )
 ax.set_title( lb + " / eval-tag-average_loss" )
 ax.set_ylim( (0,4) )
