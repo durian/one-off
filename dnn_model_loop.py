@@ -27,6 +27,7 @@ parser.add_argument('--learning_rate', default=0.0001, type=float, help='Learnin
 parser.add_argument('--optimiser', default="DFLT", type=str, help='Optimiser, Adam or GDO')
 parser.add_argument('--suffix', default="", type=str, help='Model dir suffix')
 parser.add_argument("--test", action='store_true', default=False, help='Exit before training' )
+parser.add_argument("--dropout", default=None, type=float, help='Hidden layer dropout (0-1)' )
 
 """
 parser.add_argument('--train_steps', default=1000, type=int, help='number of training steps')
@@ -121,6 +122,9 @@ def main(argv):
                 opt = None #adagrad, whoch doesn not have a learning rate
                 my_id=my_id+"_o"+args.optimiser
 
+        if args.dropout:
+                my_id = my_id + "_do" + str(args.dropout)
+                
         if args.suffix != "":
                 my_id = my_id + "_" + args.suffix
 
@@ -148,6 +152,7 @@ def main(argv):
                         n_classes=len(label_mapping),
                         model_dir="./models/"+my_id,
                         config=my_checkpointing_config,
+                        dropout=args.dropout,
                         optimizer=opt)
         else:
                 classifier = tensorflow.estimator.DNNClassifier(
@@ -155,6 +160,7 @@ def main(argv):
                         hidden_units=hidden_units,
                         n_classes=len(label_mapping),
                         model_dir="./models/"+my_id,
+                        dropout=args.dropout,
                         config=my_checkpointing_config)
                 
         
