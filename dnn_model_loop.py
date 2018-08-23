@@ -17,7 +17,6 @@ import sys
 import dataloader
 
 
-
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--batch_size', default=100, type=int, help='batch size')
@@ -28,6 +27,8 @@ parser.add_argument('--optimiser', default="DFLT", type=str, help='Optimiser, Ad
 parser.add_argument('--suffix', default="", type=str, help='Model dir suffix')
 parser.add_argument("--test", action='store_true', default=False, help='Exit before training' )
 parser.add_argument("--dropout", default=None, type=float, help='Hidden layer dropout (0-1)' )
+parser.add_argument('--iterations', default=30, type=int, help='Number of interations of steps')
+parser.add_argument('--steps', default=10000, type=int, help='Number steps per iteration')
 
 """
 parser.add_argument('--train_steps', default=1000, type=int, help='number of training steps')
@@ -52,7 +53,7 @@ def main(argv):
         
         batch_size = args.batch_size # 100
         #print('Batch_size: ' + str(batch_size))
-        train_steps = 10000 # 1000 #LOOPED LATER ON
+        train_steps = args.steps #10000 # 1000 #LOOPED LATER ON
         nr_epochs = None
         hu = [int(x) for x in args.hidden_units.split("x")]
         hidden_units = hu #[200, 200] # [10, 10] [400, 400] [400, 400, 400, 400]
@@ -68,8 +69,7 @@ def main(argv):
         
         # Label_mapping holds key value pairs where key is the label and value its integer representation
         label_mapping = dataloader.get_valid_labels(label_path, choosen_label) # Labels from labels file only
-        
-        
+
         #Get three structured separate dataframes from data sources
         #trainframe, testframe, validationframe = dataloader.loadData(data_path, False, label_mapping, max_nr_nan, fixed_selection)
         trainframe, testframe, validationframe = dataloader.loadData(structured_data_path, True, label_mapping, max_nr_nan, fixed_selection)
@@ -129,9 +129,13 @@ def main(argv):
                 my_id = my_id + "_" + args.suffix
 
         # Save data files
+        #         validationset, labels_validate, label_mapping, int_labels_validate = \
         trainset.to_csv( "train_"+my_id+".csv", index=False )
+        labels_training.to_csv( "labels_train_"+my_id+".csv", index=False )
         testset.to_csv( "test_"+my_id+".csv", index=False )
+        labels_test.to_csv( "labels_test_"+my_id+".csv", index=False )
         validationset.to_csv( "val_"+my_id+".csv", index=False )
+        labels_validate.to_csv( "labels_val_"+my_id+".csv", index=False )
 
         resultfile = open("Results/"+my_id+"_model_results.txt", "w")
         
@@ -166,7 +170,7 @@ def main(argv):
         
         ### Train the Model.
         # PJB added loop
-        for i in range(0,30):
+        for i in range(0,args.iterations):
                 print('\nModel training\n\n\n')
                 #resultfile.write('\nModel training: ' + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + '\n\n\n')
                 classifier.train(input_fn=lambda:dataloader.train_input_fn(trainset, int_labels_train, batch_size, nr_epochs), steps=train_steps)
@@ -182,21 +186,28 @@ def main(argv):
                 ### Evaluate the model
                 print('\nModel evaluation\n\n\n')
                 resultfile.write('\nModel evaluation\n\n\n')
-                expected = list(label_mapping.keys())
-                predictions = classifier.predict(input_fn=lambda:dataloader.eval_input_fn(validationset, labels=None, batch_size=batch_size))
+                #
+                expected = list(int_labels_validate)  #list(label_mapping.keys())
+                predictions = classifier.predict(input_fn=lambda:dataloader.eval_input_fn(validationset,
+                                                                                          labels=expected,
+                                                                                          batch_size=batch_size))
                 template = ('\nPrediction is "{}" ({:.1f}%), expected "{}"')
-
                 predictfile = open("Results/"+my_id+"_predictions.txt", "a")
 
+                corr = 0 # count correct predictions
                 for pred_dict, expec in zip(predictions, expected):
-                        class_id = pred_dict['class_ids'][0]
+                        template = ('Prediction is "{}" ({:5.1f}%), expected "{}"')
+                        class_id = pred_dict["class_ids"][0]
                         probability = pred_dict['probabilities'][class_id]
-                        #print(template.format(expected[class_id], 100 * probability, expec))
-                        resultfile.write('\n')
-                        resultfile.write(template.format(expected[class_id], 100 * probability, expec))
-
-                        if str(expected[class_id]) == str(expec):
-                                predictfile.write('Loop:'+str(i)+' Percent: ' + str(100 * probability) + '  ' + choosen_label + ': ' + str(expec) + '\n')
+                        print( template.format(class_id, 100 * probability, expec) )
+                        resultfile.write(template.format(class_id, 100 * probability, expec))
+                        # indices should be reverse mapped to correct label
+                        predictfile.write("Loop {}: Prediction is {} ({:.1f}%), expected {}\n".format(i, class_id, 100 * probability, expec) )
+                        if class_id == expec:
+                                corr += 1
+                print( "CORRECT", corr, "/", len(expected) )
+                resultfile.write( "Correct: "+str(corr)+"\n" )
+                predictfile.write( "Loop {}: Correct {}/{} ({:.2f}%)\n".format(i, corr, len(expected), (corr*100)/len(expected)) )
                 predictfile.close()
                 resultfile.write('\n******************************\n')
         resultfile.close()
