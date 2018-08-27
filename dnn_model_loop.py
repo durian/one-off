@@ -34,7 +34,7 @@ parser.add_argument('--steps', default=10000, type=int, help='Number steps per i
 parser.add_argument('--train_steps', default=1000, type=int, help='number of training steps')
 parser.add_argument('--hidden_units', default=[10,10], type=string, help='layout for hidden layers')
 parser.add_argument('--nr_epochs', default=None, type=int, help='number of epochs')
-parser.add_argument('--choosen_label', default=T_CHASSIS, type=string, help='the label to train and evaluate')
+parser.add_argument('--chosen_label', default=T_CHASSIS, type=string, help='the label to train and evaluate')
 parser.add_argument('--label_path', default=Labels/, type=string, help='where one labels file is located')
 parser.add_argument('--data_path', default=Data_original/, type=string, help='path to data source files or compressed file')
 parser.add_argument('--compressed', default=True, type=boolean, help='if true structured data will be used, false means data source files and a structured file will be produced')
@@ -57,18 +57,18 @@ def main(argv):
         nr_epochs = None
         hu = [int(x) for x in args.hidden_units.split("x")]
         hidden_units = hu #[200, 200] # [10, 10] [400, 400] [400, 400, 400, 400]
-        choosen_label = args.choosen_label #'ENGINE_TYPE' # 'T_CHASSIS' 'COUNTRY' 'ENGINE_TYPE' 'BRAND_TYPE'
+        chosen_label = args.chosen_label #'ENGINE_TYPE' # 'T_CHASSIS' 'COUNTRY' 'ENGINE_TYPE' 'BRAND_TYPE'
         max_nr_nan = 0
         fixed_selection = True
 
-        my_id="l"+choosen_label+"_s"+str(train_steps)+"_h"+args.hidden_units
+        my_id="l"+chosen_label+"_s"+str(train_steps)+"_h"+args.hidden_units
 
         label_path = 'Labels/'
         data_path = 'Data_original/' # 'Data_original/' 'Testdata/'
         structured_data_path = 'Compressed/' # 'Compressed_valid_chassis' Compressed/Compressed_single/
         
         # Label_mapping holds key value pairs where key is the label and value its integer representation
-        label_mapping = dataloader.get_valid_labels(label_path, choosen_label) # Labels from labels file only
+        label_mapping = dataloader.get_valid_labels(label_path, chosen_label) # Labels from labels file only
 
         #Get three structured separate dataframes from data sources
         #trainframe, testframe, validationframe = dataloader.loadData(data_path, False, label_mapping, max_nr_nan, fixed_selection)
@@ -76,15 +76,15 @@ def main(argv):
         
         # Train model data
         trainset, labels_training, label_mapping, int_labels_train = \
-                dataloader.get_model_data(trainframe, label_mapping, choosen_label)
+                dataloader.get_model_data(trainframe, label_mapping, chosen_label)
         
         # Test model data
         testset, labels_test, label_mapping, int_labels_test = \
-                dataloader.get_model_data(testframe, label_mapping, choosen_label)
+                dataloader.get_model_data(testframe, label_mapping, chosen_label)
         
         # Validate model data
         validationset, labels_validate, label_mapping, int_labels_validate = \
-                dataloader.get_model_data(validationframe, label_mapping, choosen_label)
+                dataloader.get_model_data(validationframe, label_mapping, chosen_label)
 
         if args.test:
                 sys.exit(2)
@@ -144,7 +144,7 @@ def main(argv):
         resultfile.write('Train steps: ' + str(train_steps) + '\n')
         resultfile.write('Number epochs: ' + str(nr_epochs) + '\n')
         resultfile.write('Batchsize: ' + str(batch_size) + '\n')
-        resultfile.write('Choosen label: ' + choosen_label + '\n')
+        resultfile.write('Chosen label: ' + chosen_label + '\n')
         resultfile.write('Max_nr_nan: ' + str(max_nr_nan) + '\n')
         resultfile.write('Fixed_selection: ' + str(fixed_selection) + '\n')
         resultfile.flush()
