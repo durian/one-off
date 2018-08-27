@@ -1,5 +1,5 @@
 
-# python3 dnn_model_loop.py --hidden_units=200x200 --choosen_label=ENGINE_TYPE
+# python3 dnn_model_loop.py --hidden_units=200x200 --chosen_label=ENGINE_TYPE
 
 from __future__ import absolute_import
 from __future__ import division
@@ -20,7 +20,7 @@ import dataloader
 parser = argparse.ArgumentParser()
 
 parser.add_argument('--batch_size', default=100, type=int, help='batch size')
-parser.add_argument('--choosen_label', default="T_CHASSIS", type=str, help='the label to train and evaluate')
+parser.add_argument('--chosen_label', default="T_CHASSIS", type=str, help='the label to train and evaluate')
 parser.add_argument('--hidden_units', default="200x200", type=str, help='Number of hidden units')
 parser.add_argument('--learning_rate', default=0.0001, type=float, help='Learning rate')
 parser.add_argument('--optimiser', default="DFLT", type=str, help='Optimiser, Adam or GDO')
