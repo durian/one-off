@@ -139,8 +139,7 @@ def main(unused_argv):
     print( sess )
 
     # All data
-    #df = pd.read_csv( "multi_data.csv", sep=";")
-    df = pd.read_csv( "mirrored.csv", sep=";")
+    df = pd.read_csv( "multi_flatten_v3_20100101-20190101_0.csv", sep=";")
 
     the_label = "All_Fault_in_3_months"
 
