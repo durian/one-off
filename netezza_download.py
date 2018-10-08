@@ -25,7 +25,7 @@ dt_1 = "20190101"
 prefix = "P1FW6_20181008"
  
 # pyodbc connection string
-conn = pyodbc.connect("DRIVER={NetezzaSQL};SERVER=edwqa.volvo.net;DATABASE=PROD_PMA_DL;UserName=A282102;Password=Counter01;Timeout=120")
+conn = pyodbc.connect("DRIVER={NetezzaSQL};SERVER=edwqa.volvo.net;DATABASE=PROD_PMA_DL;UserName=A282102;Password=xxxx;Timeout=120")
  
 print( conn )
  
