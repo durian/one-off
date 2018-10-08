@@ -38,7 +38,7 @@ def create_csv():
         if curr_csv >= max_files:
             print( "max_files reached" )
             return False
-    csv_fn = "C:\\Users\\a282102\\Downloads\\"+prefix+"_"+dt_0+"-"+dt_1+"_"+str(curr_csv)+".csv"
+    csv_fn = "C:\\Users\\xxxx\\Downloads\\"+prefix+"_"+dt_0+"-"+dt_1+"_"+str(curr_csv)+".csv"
     print( csv_fn )
     csv_file = open( csv_fn, "w" )
     csv_writer = csv.writer( csv_file, delimiter=";", lineterminator='\n' )
