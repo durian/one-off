@@ -5,6 +5,17 @@ import random
 import argparse
 import shutil
 
+'''
+Program to take the images and annotations from the labelImg
+progran, and prepare a directory with data suitable for YoloV3.
+
+Creates train, test and hold-out data sets, and a names and data file
+for Yolo. The network definition (filters, classes) still needs to be
+adjusted by hand.
+
+All files will be copied and created inside the basename directory.
+'''
+
 parser = argparse.ArgumentParser()
 parser.add_argument( '-b', "--basename", type=str, default="exp0",
                      help='Basename' )
@@ -12,6 +23,8 @@ parser.add_argument( '-b', "--basename", type=str, default="exp0",
 #                     help='Output directory name' )
 parser.add_argument( '-f', "--force", action='store_true', default=False,
                      help='Force if directory exists' )
+parser.add_argument( '-y', "--yolocfg", type=str, default="cfg/yolov3.cfg",
+                     help='Output directory name' )
 args = parser.parse_args()
 
 # Use dirname as a basename for the names and data file?
@@ -24,7 +37,7 @@ data_filename  = args.basename + ".data"
 
 filenames          = glob( "2*.txt" )
 classes_filename   = "classes.txt"     #from the labelimg program
-yolov3cfg_filename = "cfg/yolov3.cfg"  #not used
+yolov3cfg_filename = args.yolocfg #"cfg/yolov3.cfg" 
 
 # The classes.txt/obj.names file needs to be copied by hand!
 
@@ -86,35 +99,62 @@ with open(dirname+"hout.txt", "w") as f:
         f.write( "{}{}\n".format(dirname, filename) )
 '''
 For YoloV3:
-classes= 1  
-train  = train.txt  
-valid  = test.txt  
-names = obj.names  
-backup = backup/
+  classes = 1  
+  train   = train.txt  
+  valid   = test.txt  
+  names   = obj.names  
+  backup  = backup/
 '''
 with open(dirname+data_filename, "w") as f: 
     f.write( "classes={}\n".format(classes_count) )
     f.write( "train={}\n".format(dirname+"train.txt") )
     f.write( "valid={}\n".format(dirname+"test.txt") )
     f.write( "names={}\n".format(dirname+classes_filename) )
-    f.write( "backup={}\n".format(dirname+"backup/") ) # needs to be created
-'''
-Line 3: set batch=64, this means we will be using 64 images for
-every training step
-
-Line 4: set subdivisions=8, the batch will be divided by 8 to decrease
-GPU VRAM requirements. If you have a powerful GPU with loads of VRAM,
-this number can be decreased, or batch could be increased. The
-training step will throw a CUDA out of memory error so you can adjust
-accordingly.
-
-Line 244: set classes=1, the number of categories we want to detect
-
-Line 237: set filters=(classes + 5)*5 in our case filters=30
-'''
+    f.write( "backup={}\n".format(dirname+"backup/") )
+#
 print( "set classes={}".format( classes_count ))
 #print( "set filters={}".format( (classes_count+5)*5 )) #yolo v2
 print( "set filters={}".format( (classes_count+5)*(9/3) )) #yolo v3
+'''
+look for the htree [yolo] sections:
+  inside yolo section, change classes
+  inside [convolutional] before yolo, change filters
+'''
+if yolov3cfg_filename:
+    with open(yolov3cfg_filename) as f:
+        lines = f.readlines()
+        idx   = 0
+        yolos = []
+        for line in lines:
+            if "[yolo]" in line:
+                yolos.append(idx)
+                print( "yolo: {}". format(idx) )
+            idx += 1
+        for yolo in yolos:
+            idx  = yolo + 1
+            done = False
+            while not done:
+                if "classes" in lines[idx]:
+                    print( lines[idx] )
+                    lines[idx] = "classes={}\n".format( classes_count )
+                    print( lines[idx] )
+                    done = True
+                idx += 1
+        # backwards for filters
+        for yolo in yolos:
+            idx  = yolo - 1
+            done = False
+            while not done:
+                if "filters" in lines[idx]:
+                    print( lines[idx] )
+                    lines[idx] = "filters={}\n".format( int((classes_count+5)*(9/3)) )
+                    print( lines[idx] )
+                    done = True
+                idx -= 1
+        #
+        with open( dirname+args.basename+".cfg", "w" ) as f:
+            for line in lines:
+                f.write( line )
 
 # loop over hout.txt and prepare a batch script?
 # ./darknet detector test exp0/config.txt exp0.cfg exp0/backup/exp0.backup exp0/20180905143500+0200-snapshot.jpg -thresh .1
