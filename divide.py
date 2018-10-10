@@ -79,6 +79,14 @@ except OSError:
     print( "NB: backup/ already exists." )
 #
 shutil.copy2( classes_filename, dirname+names_filename ) 
+'''
+# maybe not in this script
+import cv2
+image = cv2.imread(filename) 
+small = cv2.resize(image, (0,0), fx=0.5, fy=0.5) 
+cv2.imshow("small image",small)
+cv2.imwrite('s.jpg',small)
+'''
 with open(dirname+"train.txt", "w") as f:
     for filename in train_data:
         shutil.copy2( filename, dirname+filename )
@@ -109,7 +117,7 @@ with open(dirname+data_filename, "w") as f:
     f.write( "classes={}\n".format(classes_count) )
     f.write( "train={}\n".format(dirname+"train.txt") )
     f.write( "valid={}\n".format(dirname+"test.txt") )
-    f.write( "names={}\n".format(dirname+classes_filename) )
+    f.write( "names={}\n".format(dirname+names_filename) )
     f.write( "backup={}\n".format(dirname+"backup/") )
 #
 print( "set classes={}".format( classes_count ))
