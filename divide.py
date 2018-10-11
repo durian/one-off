@@ -163,6 +163,17 @@ if yolov3cfg_filename:
         with open( dirname+args.basename+".cfg", "w" ) as f:
             for line in lines:
                 f.write( line )
+with open( dirname+args.basename+"_test.sh", "w" ) as f:
+    for filename in hout_data:
+        f.write( "./darknet detector test {} {} {} {}\n".format( dirname+data_filename,
+                                                                 dirname+args.basename+".cfg", #maybe not specified
+                                                                 dirname+"backup/",
+                                                                 filename
+        ))
+        
 
 # loop over hout.txt and prepare a batch script?
 # ./darknet detector test exp0/config.txt exp0.cfg exp0/backup/exp0.backup exp0/20180905143500+0200-snapshot.jpg -thresh .1
+#
+#./darknet detector test kip0/kip0.data kip0/kip0.cfg kip0/backup/kip0.backup t_20181010173000+0200-snapshot.jpg -thresh 0.01
+#cp predictions.jpg predictions3.jpg
