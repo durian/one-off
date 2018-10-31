@@ -156,6 +156,18 @@ for i, hl in enumerate(hidden):
         layer_output = tf.nn.dropout(layer_output, 0.8)
         output_prev = layer_output
         hl_prev = hl
+        
+'''
+# https://r2rt.com/implementing-batch-normalization-in-tensorflow.html
+# Layer 2 with BN, using Tensorflows built-in BN function
+w2_BN = tf.Variable(w2_initial)
+z2_BN = tf.matmul(l1_BN,w2_BN)
+batch_mean2, batch_var2 = tf.nn.moments(z2_BN,[0])
+scale2 = tf.Variable(tf.ones([100]))
+beta2 = tf.Variable(tf.zeros([100]))
+BN2 = tf.nn.batch_normalization(z2_BN,batch_mean2,batch_var2,beta2,scale2,epsilon)
+l2_BN = tf.nn.sigmoid(BN2)
+'''
 
 with tf.variable_scope('output'):
     weights = tf.get_variable('weights_out', shape=[hl, num_output],

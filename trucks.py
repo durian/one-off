@@ -5,6 +5,7 @@ import sys
 import math
 import argparse
 import os
+from datetime import datetime
 
 '''
 Creates the delta's between the histograms on a per truck basis.
@@ -30,6 +31,7 @@ parser.add_argument( "--skip_zeroes", action='store_true', default=False, help='
 parser.add_argument( "--skip_resets", action='store_true', default=False, help='Skip truck if data reset' )
 parser.add_argument( "--skip_nans", action='store_true', default=False, help='Skip truck if NaNs in data' )
 args = parser.parse_args()
+
 
 # ['VEHICL_ID', 'T_CHASSIS', 'PARAMETER_CODE', 'truck_date', '1_1', ..., '20_20', 'valid', 'repaired']
 #           0            1                 2             3      4           403      404         405
