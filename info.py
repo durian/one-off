@@ -14,18 +14,15 @@ import numpy as np
 import itertools
 import matplotlib.dates as mdates
 
-
-
 pd.set_option('display.width', 120)
 
 # CameraMinuteSensorData.csv
-
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument( '-f', '--filename', type=str, default="CameraMinuteSensorData.csv", help='File')
 parser.add_argument( '-c', '--camid', type=int, default=53, help='Camera ID')
 parser.add_argument( '-t', '--timeslice', type=str, default="300s", help='Resample time length')
+parser.add_argument( '-d', '--data', type=str, default="exp_weighted_moving_average", help="Data column")
 args = parser.parse_args()
 
 df = pd.read_csv(args.filename)
@@ -56,15 +53,16 @@ if plot_type == "vlines":
     ax0.vlines(x=cam.index.values,
                ymin=0,
                #ymax=cam["average_movement"].values, color=c, alpha=0.5,
-               ymax=cam["exp_weighted_moving_average"].values, color=c, alpha=0.5,
-               label="average_movement")
+               ymax=cam[args.data].values, color=c, alpha=0.5,
+               label=args.data)
 else:
-    ax0.bar( cam.index, cam["average_movement"],
+    ax0.bar( cam.index, cam[args.data],
              width=1/25, #in "days", 1/24 is hour width
              align="edge",
              color=c,
              #edgecolor="black",
     )
+ax0.set_title("camid "+str(args.camid)+" / "+args.data+" / "+args.timeslice)
 #
 #cam.plot( x="dt",
 #            y="average_movement" )
@@ -79,10 +77,14 @@ ax0.xaxis.set_major_formatter(myFmt)
 ##ax0.xaxis.set_minor_locator(mdates.HourLocator(interval=1))
 ##ax0.xaxis.set_minor_formatter(mdates.DateFormatter('%H'))
 
+fn = "camid_{:03d}_{:s}_{:s}.png".format(args.camid, args.data, args.timeslice)
+fig0.savefig(fn, dpi=300)
+print( "Saved", fn )
+
 plt.show(block=True)
 
-df = cam["exp_weighted_moving_average"]
+df = cam[args.data]
 print(df.head())
-fn = "camid_{:03d}_{:s}.csv".format(args.camid, args.timeslice)
+fn = "camid_{:03d}_{:s}_{:s}.csv".format(args.camid, args.data, args.timeslice)
 df.to_csv(fn, sep=";", header=None)
 print( "Saved", fn )
