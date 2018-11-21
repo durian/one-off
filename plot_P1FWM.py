@@ -1,3 +1,8 @@
+#!/usr/bin/env python3
+#
+# PJB 2018, plot histograms from csv file, hardcoded 20x20,
+#           see selection line 151, reshape in line 201, and 19 in ticks()
+#
 import pandas as pd
 import numpy as np
 from collections import Counter
@@ -11,15 +16,43 @@ import argparse
 import os
 import joblib
 
+
+'''
+import sklearn.preprocessing as prep
+
+def standard_scale(X_train, X_test):
+    preprocessor = prep.StandardScaler().fit(X_train)
+    X_train = preprocessor.transform(X_train)
+    X_test = preprocessor.transform(X_test)
+    return X_train, X_test
+'''
+
+'''
+T_CHASSIS Repair date Analysis result
+B-619621 2018-01-27   FOD Compressor
+A-677319 2018-04-09   FOD Turbine
+B-840419 2018-07-27   FOD Turbine
+B-762449 2018-06-25   FOD Compressor
+A-717140 2018-08-02   FOD Compressor
+B-665712 2018-06-07   FOD Compressor
+B-662097 2018-06-08   FOD Compressor
+A-760812 2018-07-18   FOD Compressor
+
+B-619621,A-677319,B-840419,B-762449,A-717140,B-665712,B-662097,A-760812
+'''
+
+
 parser = argparse.ArgumentParser()
 parser.add_argument( '-a', "--anonymous", action='store_true', default=False, help='Hide axes' )
-parser.add_argument( '-t', "--truck", type=str, default=None, help='Truck ID' )
+parser.add_argument( '-t', "--truck", type=str, default=None, help='PLot one truck ID' )
 parser.add_argument( '-f', "--filename", type=str, default="data_frame--2018-09-25--11-17-39.csv", help='CSV filename' )
 parser.add_argument( '-n', "--normalise", action='store_true', default=False, help='Normalise' )
-parser.add_argument( "--max_pics", type=int, default=16, help='Rows' )
-parser.add_argument( "--cols", type=int, default=4, help='Cols' )
+parser.add_argument( "--max_pics", type=int, default=16, help='Max histograms on a plot' )
+parser.add_argument( "--cols", type=int, default=4, help='Number of histogram columns in plot' )
+parser.add_argument( "--rows", type=int, default=None, help='Number of rows to read from CSV file' )
 parser.add_argument( "--top", type=int, default=None, help='Top n' )
 parser.add_argument( "--start", type=int, default=0, help='Start histogram' )
+parser.add_argument( "--trucks", type=str, default=None, help='Multiple chassis IDs, comma seperated' )
 args = parser.parse_args()
 
 print( "Reading data...", end="", flush=True)
@@ -28,7 +61,7 @@ if not os.path.exists("df_train.pickle"):
     df_train = pd.read_csv( args.filename,
                             sep=";", dtype={'VEHICL_ID': str},
                             #skiprows=lines,
-                            nrows=10000
+                            nrows=args.rows
     )
     #print( "pickling...", end="", flush=True )
     #joblib.dump( df_train,"df_train.pickle" )
@@ -79,6 +112,10 @@ A-769728     90
 uniqs = pd.unique( df_train[the_id] ) 
 if args.truck:
     uniqs = [ args.truck ]
+if args.trucks:
+    uniqs = args.trucks.split(",")
+if args.top:
+    uniqs = uniqs[0:args.top]
 print( uniqs )
 
 #normalise = False #True
@@ -88,20 +125,19 @@ for the_vehicle_id in uniqs:
     ##
     print( the_vehicle_id )
 
-    #df_train1 = df_train[ ( str(df_train[the_id]) == str(the_vehicle_id) ) ]
     try:
         df_train1 = df_train[ ( df_train[the_id] == the_vehicle_id ) ]
-        df_train.to_csv( "P1FWM_"+the_vehicle_id+".csv", sep=";", index=False )
     except:
         print( "ERROR..." )
         continue
     
     df_train1 = df_train1.sort_values(by=[the_date])
     num_pics = df_train1.shape[0]
-    if num_pics < 4:
+    if num_pics <= 0:
         print( "skipping", the_vehicle_id, num_pics )
         continue
-
+    df_train1.to_csv( "P1FWM_"+the_vehicle_id+".csv", sep=";", index=False )
+    
     # Plot the last ones, according to date
     if num_pics > args.max_pics:
         #df_train1 = df_train1.iloc[-args.max_pics:]
@@ -130,7 +166,7 @@ for the_vehicle_id in uniqs:
     pc = 0 # pic count
     #
     fig = plt.figure(figsize=(cols*3, rows*3)) #plt.figure(figsize=(sz,sz))
-    plt.subplots_adjust( hspace=0.7 )
+    plt.subplots_adjust( hspace=0.7, wspace=0.5 )
     #
     # Plot the last nn
     #if num_pics > nn:
@@ -174,7 +210,7 @@ for the_vehicle_id in uniqs:
             #im += _min
         #
         im_masked = np.ma.masked_where(im == 0, im)
-        plt.imshow( im_masked, interpolation='none', cmap="binary")# vmin=0, vmax=10)
+        plt.imshow( im_masked, interpolation='none')# vmin=0, vmax=10) #cmap="binary"
         ax.set_aspect('equal')
         ax.get_xaxis().set_ticks([0, 19])
         ax.get_yaxis().set_ticks([])
@@ -186,7 +222,7 @@ for the_vehicle_id in uniqs:
         if not args.anonymous:
             ax.set_xlabel( "engine speed" )
             ax.set_ylabel( "engine torque" )
-            plt.colorbar(orientation='vertical', ax=ax, format='%.1f')
+            plt.colorbar(orientation='vertical', ax=ax, format='%.1f', fraction=0.0408, pad=0.04)
             #plt.clim(0, 10);
         else:
             plt.colorbar(orientation='vertical', ax=ax, ticks=[])
