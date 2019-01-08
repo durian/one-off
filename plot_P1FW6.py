@@ -20,6 +20,7 @@ parser.add_argument( "--max_pics", type=int, default=16, help='Rows' )
 parser.add_argument( "--cols", type=int, default=4, help='Cols' )
 parser.add_argument( "--top", type=int, default=None, help='Top n' )
 parser.add_argument( "--start", type=int, default=0, help='Start histogram' )
+parser.add_argument( "--ncb", action='store_true', default=False, help='No colourbar' )
 args = parser.parse_args()
 
 print( "Reading data...", end="", flush=True)
@@ -86,7 +87,7 @@ for the_vehicle_id in uniqs:
     pc = 0 # pic count
     #
     fig = plt.figure(figsize=(cols*3, rows*3)) #plt.figure(figsize=(sz,sz))
-    plt.subplots_adjust( hspace=0.7, wspace=0.5 )
+    plt.subplots_adjust( hspace=0.7 )
     #
     # Plot the last nn
     #if num_pics > nn:
@@ -139,25 +140,22 @@ for the_vehicle_id in uniqs:
         ax.set_yticks(np.arange(-.5, 9, 1), minor=True);
         ax.grid(which='minor', color='w', linestyle='-', linewidth=1)
         #
-        ax.tick_params(which='major', # both, minor
-                top='off', # turn off top ticks
-                left='off', # turn off left ticks
-                right='off',  # turn off right ticks
-                bottom='off')
         #ax.set_ylim(ax.get_ylim()[::-1]) #upside down. but all data
         if not args.anonymous:
-            ax.set_xlabel( "Boost Pressure" )
-            ax.set_ylabel( "Turbo Speed" )
-            plt.colorbar(orientation='vertical', ax=ax, format='%.1f', fraction=0.0408, pad=0.04)
+            ax.set_xlabel( "" )
+            ax.set_ylabel( "" )
+            if not args.ncb:
+                plt.colorbar(orientation='vertical', ax=ax, format='%.1f', fraction=0.046, pad=0.04)
         else:
-            plt.colorbar(orientation='vertical', ax=ax, ticks=[])
+            if not args.ncb:
+                plt.colorbar(orientation='vertical', ax=ax, ticks=[])
         sp += 1
     if not args.anonymous:
-        fig.suptitle( the_id+": "+str(the_vehicle_id)+' P1FWM' ) #Training data '+str(st)+" +"+str(nn) )
-    fn = "training_"+str(the_vehicle_id)+"_"+str(st)+"+"+str(pc)
+        fig.suptitle( the_id+": "+str(the_vehicle_id)+' P1FW6' ) #Training data '+str(st)+" +"+str(nn) )
+    fn = "P1FW6_"+str(the_vehicle_id)+"_"+str(st)+"+"+str(pc)
     if args.normalise:
         fn += "_N"
     fn += ".png"
     print( "Saving", fn )
-    fig.savefig( fn, dpi=288 )
+    fig.savefig( fn, dpi=288, transparent=True )
     #plt.show()
