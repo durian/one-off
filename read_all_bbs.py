@@ -57,18 +57,20 @@ for filename in sorted(filenames):
     if filename_base[0:2] == "tl":
         filename_date = filename_base[3:7]+"/"+filename_base[7:9]+"/"+filename_base[9:11] #filename_base[3:11]
         filename_time = filename_base[12:14]+":"+filename_base[14:16]+":"+filename_base[16:18] #filename_base[12:18]
-        epoch_raw = "r"+filename_base[20:33]
-        epoch_val = int(float(filename_base[20:33])/1000)
-        film_date = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
-        film_time = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
+        epoch_raw     = "r"+filename_base[20:33]
+        epoch_val     = int(float(filename_base[20:33])/1000)
+        epoch_start   = epoch_val
+        film_date     = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
+        film_time     = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
     else:
         f_type        = "live"
         filename_date = "??" # we don't really care about these
         filename_time = "??"
         epoch_val     = int(float(filename_base[6:19])/1000) #on the movie is local time
-        film_date = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
-        film_time = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
-        epoch_raw = "r"+str(epoch_val)
+        epoch_start   = epoch_val
+        film_date     = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
+        film_time     = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
+        epoch_raw     = "r"+str(epoch_val)
     print( filename_base, epoch_raw, film_date, film_time ) # we'll get some extra conversions
     # We have doubles sometimes, skip them.
     if epoch_raw in processed:
@@ -96,14 +98,14 @@ for filename in sorted(filenames):
                 bits = [bits[0], 0, 0, 0, 0, 0, 0, filename_base, epoch_val, epoch_str, 0, 0, 0, colours[colour_idx]] 
                 all_bbs.append( bits )
             if f_type == "live":
-                epoch_val += 1/5 #  5 fps
+                epoch_val += 1/5.0 #  5 fps
             else:
                 epoch_val += 5 # one every 5 seconds # 1/24.0 # add one frame time
     colour_idx += 1
     colour_idx = colour_idx % len(colours)
     end_date = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
     end_time = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
-    processed_info.append( [filename_base, epoch_raw, film_date, film_time, end_date, end_time] )
+    processed_info.append( [filename_base, epoch_start, film_date, film_time, epoch_val, end_date, end_time, epoch_start - epoch_val] )
 
 #print( all_bbs )
 df = pd.DataFrame( all_bbs,
