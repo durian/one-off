@@ -62,7 +62,7 @@ for filename in sorted(filenames):
         epoch_start   = epoch_val
         film_date     = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
         film_time     = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
-    else:
+    elif filename_base[0:5] == "live5":
         f_type        = "live"
         filename_date = "??" # we don't really care about these
         filename_time = "??"
@@ -71,6 +71,18 @@ for filename in sorted(filenames):
         film_date     = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
         film_time     = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
         epoch_raw     = "r"+str(epoch_val)
+    elif filename_base[0:6] == "live30":
+        f_type        = "live"
+        filename_date = "??" # we don't really care about these
+        filename_time = "??"
+        epoch_val     = int(float(filename_base[7:20])/1000) #on the movie is local time
+        epoch_start   = epoch_val
+        film_date     = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
+        film_time     = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
+        epoch_raw     = "r"+str(epoch_val)
+    else:
+        print( "ERROR, unknow format." )
+        sys.exit(1)
     print( filename_base, epoch_raw, film_date, film_time ) # we'll get some extra conversions
     # We have doubles sometimes, skip them.
     if epoch_raw in processed:
