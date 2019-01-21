@@ -30,6 +30,7 @@ Relative: 6 months ago
 parser = argparse.ArgumentParser()
 parser.add_argument( '-f', "--filename", type=str, default="FOO.csv", help='CSV filename' )
 parser.add_argument( '-r', "--results", type=str, default="./results", help='Output files (like results_camera-80)' )
+parser.add_argument( '-n', "--no_save", action='store_true', default=False, help="Don't save CSV file" )
 args = parser.parse_args()
 
 def custom_round(x, base=5):
@@ -47,7 +48,8 @@ colours = ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c",
            "#c7c7c7", "#bcbd22", "#dbdb8d", "#17becf", "#9edae5"] # add a colour, not necessary but convenient
 colours = ["#1f77b4", "#aec7e8"] # add a colour, not necessary but convenient
 colour_idx = 0
-for filename in filenames:
+processed_info = []
+for filename in sorted(filenames):
     filename_base = os.path.basename(filename)
     #tl_20180706T121648Z-1530937013599
     #live5-1546902576579.ts_bboxcords.txt
@@ -57,20 +59,24 @@ for filename in filenames:
         filename_time = filename_base[12:14]+":"+filename_base[14:16]+":"+filename_base[16:18] #filename_base[12:18]
         epoch_raw = "r"+filename_base[20:33]
         epoch_val = int(float(filename_base[20:33])/1000)
+        film_date = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
+        film_time = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
     else:
         f_type        = "live"
+        filename_date = "??" # we don't really care about these
+        filename_time = "??"
         epoch_val     = int(float(filename_base[6:19])/1000) #on the movie is local time
-        filename_date = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
-        filename_time = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
+        film_date = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
+        film_time = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
         epoch_raw = "r"+str(epoch_val)
-        print( epoch_raw, filename_date, filename_time ) # we'll get some extra conversions
+    print( filename_base, epoch_raw, film_date, film_time ) # we'll get some extra conversions
     # We have doubles sometimes, skip them.
     if epoch_raw in processed:
         continue
     processed.append( epoch_raw )
     #
     epoch_str = datetime.datetime.utcfromtimestamp(epoch_val) 
-    print( filename_date, filename_time, epoch_str )
+    #print( filename_date, filename_time, epoch_str )
     with open(filename, "r") as f:
         lines = (f.readlines())[1:]
         for line in lines:
@@ -95,6 +101,10 @@ for filename in filenames:
                 epoch_val += 5 # one every 5 seconds # 1/24.0 # add one frame time
     colour_idx += 1
     colour_idx = colour_idx % len(colours)
+    end_date = time.strftime('%Y/%m/%d',  time.gmtime(int(epoch_val)))
+    end_time = time.strftime('%H:%M:%S',  time.gmtime(int(epoch_val)))
+    processed_info.append( [filename_base, epoch_raw, film_date, film_time, end_date, end_time] )
+
 #print( all_bbs )
 df = pd.DataFrame( all_bbs,
                    columns=["framenum", "class", "conf", "xmin", "ymin", "xmax", "ymax", "file", "raw", "epoch", "area", "cx", "cy", "colour"]
@@ -114,5 +124,9 @@ print( df.tail(10) )
 print( df["file"].unique() )
 print( df["epoch"].unique() )
 
-print( "Saving", args.filename )
-df.to_csv( args.filename, sep=";", index=False )
+if not args.no_save:
+    print( "Saving", args.filename )
+    df.to_csv( args.filename, sep=";", index=False )
+
+for info in processed_info:
+    print( info )
