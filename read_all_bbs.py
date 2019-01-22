@@ -107,7 +107,10 @@ for filename in sorted(filenames):
                 bits.append( colours[colour_idx] )
                 all_bbs.append( bits )
             else:
-                bits = [bits[0], 0, 0, 0, 0, 0, 0, filename_base, epoch_val, epoch_str, 0, 0, 0, colours[colour_idx]] 
+                # If we have a "na" we should put a non-zero area to show there was a movie in the plot
+                # (and colour it red maybe)
+                #bits = [bits[0], 0, 0, 0, 0, 0, 0, filename_base, epoch_val, epoch_str, 0, 0, 0, colours[colour_idx]]
+                bits = [bits[0], 0, 0, 0, 0, 0, 0, filename_base, epoch_val, epoch_str, -1000, 0, 0, "#FF0000"] 
                 all_bbs.append( bits )
             if f_type == "live":
                 epoch_val += 1/5.0 #  5 fps
@@ -142,5 +145,5 @@ if not args.no_save:
     print( "Saving", args.filename )
     df.to_csv( args.filename, sep=";", index=False )
 
-for info in processed_info:
+for info in sorted(processed_info, key=lambda x:x[1]): # sort on epoch
     print( info )
