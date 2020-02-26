@@ -11,15 +11,17 @@ import matplotlib as mpl
 mpl.use("Qt5Agg") #TkAgg crashes
 import matplotlib.pyplot as plt
 import numpy as np
+from collections import Counter
 
 pd.set_option('display.width', 120)
 
 # ----
 
+dist = Counter()
 def gen_data():
     l = []
     # ["ID", "KM", "DEAD", "ENGINE", "MOUNTAIN", "CITY", "MONDAY"]
-    for x in range(0, 100):
+    for x in range(0, 1000):
         E  = random.randint(0,   1)
         M  = random.randint(0,   1)
         C  = random.randint(0,   1)
@@ -42,6 +44,16 @@ def gen_data():
             #MM = 0
             pass
         if km > 0:
+            if E == 1:
+                dist["E"] += 1
+            if M == 1:
+                dist["M"] += 1
+            if C == 1:
+                dist["C"] += 1
+            if MM == 1:
+                dist["MM"] += 1
+            if D == 1:
+                dist["D"] += 1                
             d = [x, int(km), D, E, M, C, MM]
             l.append( d )
     return l
@@ -49,8 +61,7 @@ def gen_data():
 dl = gen_data()
 df = pd.DataFrame( dl, columns=["ID", "KM", "DEAD", "ENGINE", "MOUNTAIN", "CITY", "MONDAY"] )
 print( df )
-#sys.exit(1)
-
+print( dist )
 
 from lifelines import KaplanMeierFitter, WeibullFitter
 
@@ -63,6 +74,9 @@ MM = ( (df['MONDAY']   == 1), "Monday" )
 
 BROKEN = ( (df['DEAD']  > 0),  "all broken down" )
 OKAY   = ( (df['DEAD'] == 0), "all okay" ) # not used obviously
+
+fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(8,4))
+ax.hist( df["KM"], bins=100, rwidth=0.8 )
 
 fig0, ax0 = plt.subplots(nrows=1, ncols=1, figsize=(8,4))
 
